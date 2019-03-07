@@ -1,15 +1,11 @@
 import unittest
 import time
-import platform
 import json
 from pathlib import Path
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 
 ad_block_extension = '/home/laurabarluzzi/Downloads/AdBlock_v3.41.0.crx'
 ad_block_installed_title = "AdBlock is now installed!"
-
-OS = platform.system()
 
 WEBSITES_PATH = Path(__file__).parent / 'websites.json'
 SCREENSHOTS_PATH = Path(__file__).parent / 'screenshots'
@@ -25,8 +21,8 @@ class WebsiteWithExtension(unittest.TestCase):
         cls.urls = URLS
         cls.options = webdriver.ChromeOptions()
         cls.options.add_extension(ad_block_extension)
+        cls.options.add_argument("--start-maximized")
         cls.driver = webdriver.Chrome(options=cls.options)
-        cls.driver.set_window_size(1080, 2048)
         cls.setup_timestamp = time.time()
         cls.metadata = {
             "browser_and_system_info": cls.driver.capabilities,
@@ -58,6 +54,11 @@ class WebsiteWithExtension(unittest.TestCase):
             self.driver.get(url)
             time.sleep(1)
             path_to_screenshot = str(self.directory / "{}_with.png".format(index)).lower()
+            self.driver.execute_script("""
+                document.body.style.transform='scale(.5)';
+                document.body.style.transformOrigin = 'top center';
+            """)
+            time.sleep(0.5)
             self.driver.save_screenshot(path_to_screenshot)
 
             page_title = self.driver.title
@@ -88,9 +89,8 @@ class WebsiteWithoutExtension(unittest.TestCase):
     def setUpClass(cls):
         cls.urls = URLS
         cls.options = webdriver.ChromeOptions()
-        cls.options.add_argument('headless')
+        cls.options.add_argument("--start-maximized")
         cls.driver = webdriver.Chrome(options=cls.options)
-        cls.driver.set_window_size(1080, 2048)
         cls.setup_timestamp = time.time()
         cls.metadata = {
             "browser_and_system_info": cls.driver.capabilities,
@@ -118,7 +118,11 @@ class WebsiteWithoutExtension(unittest.TestCase):
             self.driver.get(url)
             time.sleep(1)
             path_to_screenshot = str(self.directory / "{}_without.png".format(index)).lower()
-            print(path_to_screenshot)
+            self.driver.execute_script("""
+                document.body.style.transform='scale(.5)';
+                document.body.style.transformOrigin = 'top center';
+            """)
+            time.sleep(5)
             self.driver.get_screenshot_as_file(path_to_screenshot)
 
             page_title = self.driver.title

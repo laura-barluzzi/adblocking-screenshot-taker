@@ -1,6 +1,5 @@
 import unittest
 import time
-import platform
 import json
 from pathlib import Path
 from selenium import webdriver
@@ -8,8 +7,6 @@ from selenium.webdriver.firefox.options import Options
 
 ad_block_extension = '/home/laurabarluzzi/Downloads/adblock-3.16.2-an+fx.xpi'
 ad_block_installed_title = "AdBlock is now installed!"
-
-OS = platform.system()
 
 WEBSITES_PATH = Path(__file__).parent / 'websites.json'
 SCREENSHOTS_PATH = Path(__file__).parent / 'screenshots'

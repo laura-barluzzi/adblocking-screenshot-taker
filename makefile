@@ -1,4 +1,5 @@
-chromedriver_version := $(shell google-chrome --version | cut -d' ' -f3)
+# chromedriver_version := $(shell google-chrome --version | cut -d' ' -f3)
+chromedriver_version := 72.0.3626.69
 env := env
 
 $(env)/pip-install.done: requirements.txt

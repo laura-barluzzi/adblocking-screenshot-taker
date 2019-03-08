@@ -7,7 +7,13 @@ $(env)/pip-install.done: requirements.txt
 
 $(env)/drivers/chrome/$(chromedriver_version)/chromedriver:
 	mkdir -p "$(env)/drivers/chrome/$(chromedriver_version)/"
-	wget "https://chromedriver.storage.googleapis.com/$(chromedriver_version)/chromedriver_linux64.zip" -O "$(env)/drivers/chrome/$(chromedriver_version)/driver.zip"
+	if ! wget "https://chromedriver.storage.googleapis.com/$(chromedriver_version)/chromedriver_linux64.zip" -O "$(env)/drivers/chrome/$(chromedriver_version)/driver.zip"; then [\
+		echo "\
+		=================================================================================\
+		Chromedriver version '$(chromedriver_version)' does not exist.\
+		Find available versions here: https://chromedriver.storage.googleapis.com\
+		Run make run_chrome -e chromedriver_version=xxx where xxx is the version number.\
+		================================================================================="]; fi
 	unzip "$(env)/drivers/chrome/$(chromedriver_version)/driver.zip" -d "$(env)/drivers/chrome/$(chromedriver_version)/"
 
 run_chrome: $(env)/pip-install.done $(env)/drivers/chrome/$(chromedriver_version)/chromedriver

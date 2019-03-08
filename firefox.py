@@ -43,8 +43,17 @@ class WebsiteWithExtension(unittest.TestCase):
     def tearDownClass(cls):
         cls.driver.quit()
         cls.metadata["test_end_timestamp"] = time.time()
-        with cls.log_file.open('a+', encoding='utf-8') as log_file:
-            json.dump(cls.metadata, log_file)
+
+        try:
+            with cls.log_file.open('r', encoding='utf-8') as log_file:
+                logs = json.load(log_file)
+        except FileNotFoundError:
+            logs = []
+
+        logs.append(cls.metadata)
+
+        with cls.log_file.open('w', encoding='utf-8') as log_file:
+            json.dump(logs, log_file)
 
     def test_extension_installed(self):
         driver = self.driver
@@ -117,8 +126,17 @@ class WebsiteWithoutExtension(unittest.TestCase):
     def tearDownClass(cls):
         cls.driver.quit()
         cls.metadata["test_end_timestamp"] = time.time()
-        with cls.log_file.open('a+', encoding='utf-8') as log_file:
-            json.dump(cls.metadata, log_file)
+
+        try:
+            with cls.log_file.open('r', encoding='utf-8') as log_file:
+                logs = json.load(log_file)
+        except FileNotFoundError:
+            logs = []
+
+        logs.append(cls.metadata)
+
+        with cls.log_file.open('w', encoding='utf-8') as log_file:
+            json.dump(logs, log_file)
 
     def test_search_in_python_org(self):
         for url in self.urls:

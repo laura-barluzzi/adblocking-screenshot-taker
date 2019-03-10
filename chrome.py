@@ -1,6 +1,9 @@
 import unittest
 import time
 import json
+import base64
+from PIL import Image
+from io import BytesIO
 from pathlib import Path
 from selenium import webdriver
 
@@ -22,6 +25,7 @@ class WebsiteWithExtension(unittest.TestCase):
         cls.options = webdriver.ChromeOptions()
         cls.options.add_extension(ad_block_extension)
         cls.options.add_argument("--start-maximized")
+        cls.options.add_argument("--mute-audio")
         cls.driver = webdriver.Chrome(options=cls.options)
         cls.setup_timestamp = time.time()
         cls.metadata = {
@@ -67,7 +71,8 @@ class WebsiteWithExtension(unittest.TestCase):
                 document.body.style.transformOrigin = 'top center';
             """)
             time.sleep(0.5)
-            self.driver.save_screenshot(path_to_screenshot)
+
+            _take_screenshot(self.driver, path_to_screenshot)
 
             page_title = self.driver.title
             page_url = self.driver.current_url
@@ -98,6 +103,7 @@ class WebsiteWithoutExtension(unittest.TestCase):
         cls.urls = URLS
         cls.options = webdriver.ChromeOptions()
         cls.options.add_argument("--start-maximized")
+        cls.options.add_argument("--mute-audio")
         cls.driver = webdriver.Chrome(options=cls.options)
         cls.setup_timestamp = time.time()
         cls.metadata = {
@@ -139,7 +145,7 @@ class WebsiteWithoutExtension(unittest.TestCase):
                 document.body.style.transformOrigin = 'top center';
             """)
             time.sleep(5)
-            self.driver.get_screenshot_as_file(path_to_screenshot)
+            _take_screenshot(self.driver, path_to_screenshot)
 
             page_title = self.driver.title
             page_url = self.driver.current_url
@@ -155,6 +161,23 @@ class WebsiteWithoutExtension(unittest.TestCase):
 
 def _assure_directories_exist(path):
     Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def _take_screenshot(driver, path_to_screenshot):
+    screenshot = Image.open(BytesIO(base64.b64decode(driver.get_screenshot_as_base64())))
+    width, height = screenshot.size
+
+    body = driver.find_element_by_tag_name('body')
+    body_info = body.rect
+
+    left = (width - body_info['width']) // 2
+    top = body_info['y']
+    right = (left + body_info['width'])
+    bottom = height
+
+    cropped_screenshot = screenshot.crop((left, top, right, bottom))
+    cropped_screenshot.load()
+    cropped_screenshot.save(path_to_screenshot)
 
 
 if __name__ == "__main__":

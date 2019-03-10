@@ -22,6 +22,7 @@ class WebsiteWithExtension(unittest.TestCase):
         cls.urls = URLS
         cls.options = Options()
         cls.options.headless = True
+        cls.options.set_preference("media.volume_scale", "0.0")
         cls.driver = webdriver.Firefox(options=cls.options)
         cls.driver.set_window_size(1080, 2048)
         cls.driver.install_addon(ad_block_extension, temporary=True)
@@ -106,7 +107,8 @@ class WebsiteWithoutExtension(unittest.TestCase):
         cls.urls = URLS
         cls.options = Options()
         cls.options.headless = True
-        cls.driver = webdriver.Firefox(timeout=50, options=cls.options)
+        cls.options.set_preference("media.volume_scale", "0.0")
+        cls.driver = webdriver.Firefox(options=cls.options)
         cls.driver.set_window_size(1080, 2048)
         cls.setup_timestamp = time.time()
         cls.metadata = {

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comparing screenshots</title>
+  <style>
+    .label {
+      font-weight: bold;
+    }
+    body {
+      margin: 0;
+    }
+    header {
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background-color: white;
+      border-bottom-color: black;
+      border-bottom-style: solid;
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header .metadata {
+      width: 100%;
+      padding: 0px 10px;
+      background-color: yellow;
+      text-align: center;
+    }
+    header .action-row {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      border: solid;
+      border-color: gray;
+    }
+    header .half {
+      width: 50%;
+      height: 100%;
+      padding: 0 10px;
+    }
+    .half.left {
+      border-right-style: solid;
+      border-right-color: gray;
+    }
+    .half.right {
+      border-left-style: solid;
+      border-left-color: gray;
+    }
+    #images-box {
+      margin-top: 80px;
+      display: flex;
+    }
+    #images-box img {
+      width: 50%;
+      height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="metadata">
+      <span>Test time: </span>
+      <span id="testedOn" class="label"></span>
+
+      <span>Browser:</span>
+      <span id="browserName" class="label"></span>
+      <span id="browserVersion" class="label"></span>
+
+      <span>Webdriver:</span>
+      <span id="webdriverVersion" class="label"></span>
+    </div>
+
+    <div class="action-row label">
+      <div class="half left">Without AdBlock</div>
+      <div class="half right">
+        With AdBlock
+        <button type="button" id="looks-good">Looks good</button>
+        <button type="button" id="looks-odd">Looks odd</button>
+      </div>
+    </div>
+
+  </header>
+  <div id="images-box">
+    <img id="without"/>
+    <img id="with"/>
+  </div>
+
+
+  <script>
+    displayScreenshots = (tests) => {
+      console.log("load screenshots now");
+      if (typeof tests === "undefined" || !Object.keys(tests).length) return;
+
+      let counter = 0;
+      for (var testedURL in tests) {
+        let imgWithout = document.getElementById("without");
+        let imgWith = document.getElementById("with");
+        console.log(imgWithout);
+        console.log(imgWith);
+        console.log(tests[testedURL].without_extension.path_to_screenshot);
+        imgWithout.src = tests[testedURL].without_extension.path_to_screenshot;
+        imgWith.src = tests[testedURL].with_extension.path_to_screenshot;
+        break;
+      }
+    }
+    getBrowserVersion = (browserName, envInfo) => {
+      if (browserName === "firefox") {
+        return envInfo.browserVersion || "";
+      } else if (browserName === "chrome") {
+        return envInfo.version || "";
+      }
+    }
+    getWebdriverVersion = (browserName, envInfo) => {
+      if (browserName === "firefox") {
+        return envInfo["moz:geckodriverVersion"] || "";
+      } else if (browserName === "chrome") {
+        return envInfo.chrome.chromedriverVersion || "";
+      }
+    }
+    displayTestMetadata = (metadata) => {
+      if (typeof metadata === "undefined" || !Object.keys(metadata).length) return;
+
+      let envInfo = metadata.browser_and_system_info;
+      if (typeof envInfo === "undefined" || !Object.keys(envInfo).length) return;
+
+      let browserName = envInfo.browserName || "";
+      let browserVersion = getBrowserVersion(browserName, envInfo);
+      let webdriverVersion = getWebdriverVersion(browserName, envInfo);
+      let timestampInSec = parseInt(metadata.test_start_timestamp);
+      let date = new Date(timestampInSec * 1000);
+
+      document.getElementById("browserName").innerHTML = browserName;
+      document.getElementById("browserVersion").innerHTML = browserVersion;
+      document.getElementById("testedOn").innerHTML = date.toLocaleString();
+      document.getElementById("webdriverVersion").innerHTML = webdriverVersion;
+    }
+
+    loadResults = (json) => {
+      displayTestMetadata(json.test_metadata);
+      displayScreenshots(json.tests);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      fetch('./logs.json')
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(json) {
+        console.log('Fetched successfully');
+        console.log(json);
+        loadResults(json);
+      })
+      .catch(function(error) {
+        console.log(error);
+      });
+    });
+  </script>
+
+
+</body>
+</html>
